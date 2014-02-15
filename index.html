@@ -11,25 +11,44 @@
     <script src="https://cdn.firebase.com/v0/firebase.js"></script>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
     <script src="http://connect.soundcloud.com/sdk.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js"></script>
     
 </head>
 
 <body>
     <title>SurroundSync</title>
+    <div class="page">
+    <h1><span class="glyphicon glyphicon-music"></span><i> SurroundSync</i><small> Virtual surround sound with a friend.</small></h1>
+    <hr></hr>
+    
+    <ul class="nav nav-pills orange">
+      <li class="active"><a href="#">Home</a></li>
+      <li><a href="#">Lobby</a></li>
+      <li><a href="music.html">Music Room</a></li>
+    </ul>
 
-
-
-    <div id='messagesDiv'></div>
-    Press enter when you are ready.
+    <div id='messagesDiv' class="name">
+    CREATE NEW ROOM:
     <input type='text' id='nameInput' placeholder='Name'>
-
-    <div id='roomDiv'></div>
-    Enter the room to enter.
+    </div>
+    
+    
+  
+    
+    <div id='roomDiv' class="room">
+    ENTER A ROOM:
     <input type='text' id='roomInput' placeholder='Room'>
+    </div>
+
+  <div class="or">OR</div>
+    
+    <p></p>
 
     <div id="player" class="player" align="center">
-    <iframe width="100%" height="200" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/60188057&amp;auto_play=false&amp;hide_related=true&amp;visual=false" id="p">
+    <iframe width="100%" height="200" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/60188057&amp;auto_play=false&amp;hide_related=true&amp;visual=false&amp;show_comments=false&amp;sharing=false" id="p">
     </iframe>
+    </div>
+    
     </div>
     
     <script>
@@ -63,8 +82,8 @@
                 console.log("READY");
 
                 //sound.setVolume(0);
-
-                sound.play();
+//REENABLE HERREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+                //sound.play();//NEED TO REENABLE THIS
                 //sound.seekTo(10000);
                 //sound.pause();
 
@@ -72,7 +91,7 @@
             
             sound.bind(SC.Widget.Events.PLAY_PROGRESS, function(out)
             {
-                if(out.currentPosition > 500 && flag == false)
+                if(out.currentPosition > 200 && flag == false)
                 {
                     sound.pause();
                 }
