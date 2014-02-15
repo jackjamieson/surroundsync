@@ -11,25 +11,49 @@
     <script src="https://cdn.firebase.com/v0/firebase.js"></script>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js'></script>
     <script src="http://connect.soundcloud.com/sdk.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js"></script>
     
 </head>
 
 <body>
-    <title>SurroundSync</title>
+    <title>SurroundSync - Music Room</title>
+    <div class="page">
+    <h1><span class="glyphicon glyphicon-music"></span><i> SurroundSync</i><small> Virtual surround sound with a friend.</small></h1>
+    <hr></hr>
+    
+    <ul class="nav nav-pills orange">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">Lobby</a></li>
+      <li class="active"><a href="#">Music Room</a></li>
+    </ul>
 
 
-
-    <div id='messagesDiv'></div>
-    Press enter when you are ready.
-    <input type='text' id='nameInput' placeholder='Name'>
-
-    <div id='roomDiv'></div>
-    Enter the room to enter.
+    <div id="ready1" class="readymsg"></div>
+    
+    <div id='messagesDiv' class="name">
+    CREATE NEW ROOM:
+    <input type='text' id='nameInput' placeholder='Room Name' maxlength="20">
+    </div>
+    
+    
+    <div id='roomDiv' class="room">
+    ENTER A ROOM:
     <input type='text' id='roomInput' placeholder='Room'>
+    </div>
+
+  <div class="or">OR</div>
+  
+  <div>Change the song: <small>You can change the track, set, or album here.</small>
+      <input type='text' id='chsong' placeholder='New Music?'>
+  </div>
+    
+    <p></p>
 
     <div id="player" class="player" align="center">
-    <iframe width="100%" height="200" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/60188057&amp;auto_play=false&amp;hide_related=true&amp;visual=false" id="p">
+    <iframe width="100%" height="200" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/60188057&amp;auto_play=false&amp;hide_related=true&amp;visual=false&amp;show_comments=false&amp;sharing=false" id="p">
     </iframe>
+    </div>
+    
     </div>
     
     <script>
@@ -63,8 +87,8 @@
                 console.log("READY");
 
                 //sound.setVolume(0);
-
-                sound.play();
+//REENABLE HERREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+                //sound.play();//NEED TO REENABLE THIS
                 //sound.seekTo(10000);
                 //sound.pause();
 
@@ -72,7 +96,7 @@
             
             sound.bind(SC.Widget.Events.PLAY_PROGRESS, function(out)
             {
-                if(out.currentPosition > 500 && flag == false)
+                if(out.currentPosition > 200 && flag == false)
                 {
                     sound.pause();
                 }
@@ -90,6 +114,7 @@
          //FIREBASE
         var myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
         var syncRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
+        var newSync = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
         var offset;
         
                         var offsetRef = new Firebase("https://boiling-fire-1516.firebaseIO.com/.info/serverTimeOffset");
@@ -106,8 +131,8 @@
             if (e.keyCode == 13) {
                 //If user hits enter for a new room name.
                 myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
-                var newSync = myRootRef.push();
-
+                newSync = myRootRef.push();
+                
                 var name = $('#nameInput').val();
                 var ready = "Ready";
 
@@ -115,13 +140,13 @@
                 newSync.set({
                     'name': name,
                     'name-2' : "None",
-                    'status': ready,
+                    'status': "Waiting",
                     'lag1' : offset,
                     'lag2' : 0
                 });
                 var div = document.getElementById('ready1');
 
-                div.innerHTML = name + " is ready!";
+                div.innerHTML = "Room \'" + name + "\' is ready!";
                 $('#nameInput').val('');
                 //console.log("success");
                 var url = newSync.toString();
@@ -130,7 +155,7 @@
                 var divUrl = document.getElementById('outputURL');
 
                 var result = url.substring(url.lastIndexOf('/') + 1);
-                //myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync' + result);
+                myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync/' + result);
 
                 divUrl.innerHTML = "Send this code to your friend: " + result;
             }
@@ -141,14 +166,15 @@
                 //If user hits enter for a new room name.
                 //var newSync = myRootRef.push();
                 var name = $('#roomInput').val();
-                syncRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync/' + name);
+                myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync/' + name);
                 var connected = "Connected"
                 var ready = "Ready";
 
                 //myRootRef.push({name:name, status:ready});
-                syncRef.update({
+                myRootRef.update({
                     'name-2': connected,
-                    'lag2': offset
+                    'lag2': offset,
+                    'status': "Ready"
                 });
                 //var div = document.getElementById('ready1');
 
@@ -164,49 +190,60 @@
                 //divUrl.innerHTML = "Send this URL to your friend: " + result;
             }
         });
+        $('#chsong').keypress(function (e) {
+            if (e.keyCode == 13) {
+                //If user hits enter for a new room name.
+                var newmusic = $('#chsong').val();
+                sound.load(newmusic);
+            }
+        });
 
          //Send the url to the friend.  When the friend goes to that url they will be in the same uniqune firebase location as this user.
          //Fire back to this user once the other user hits enter and set to play. SIMPLE.
          //FIREBASE READ
+        
         myRootRef.on('child_changed', function (snapshot) {
             if (snapshot.val() === null) {
                 // console.log("user is not ready");
             } else {
                 //switch the time offsets?
-                    var myOffset = offset;
-                    
-                    var lag1 = snapshot.val().lag1;
-                    var lag2 = snapshot.val().lag2;
-                    var diff = lag1 - lag2;
-                    
-                    if (myOffset == lag1)
+                    console.log(myRootRef.toString());
+                    if(myRootRef.toString() != "https://boiling-fire-1516.firebaseio.com/sync")
                     {
-                        myOffset = lag2 * -1;
+                        var myOffset = offset;
+                        
+                        var lag1 = snapshot.val().lag1;
+                        var lag2 = snapshot.val().lag2;
+                        var diff = lag1 - lag2;
+                        
+                        if (myOffset == lag1)
+                        {
+                            myOffset = lag2 * -1;
+                        }
+                        else myOffset = lag1 * -1;
+    
+                        //setTimeout(function(){alert("hi")}, 1000);
+                        //if (diff <= 100 && diff >= -100)
+                        //{
+                        if(diff < 0)
+                            diff = diff *-1;
+                            
+                            //sound.seekTo(diff);
+                            
+                            setTimeout(playMusic(), diff);
+                        //}
+                        //else alert("Your latency is too high.")
+                            
+                        console.log("Playing from " + diff);
+                        
+                        
+                        //sound.seekTo(offset * -1);
+                        //sound.setVolume(0);
+                        //sound.seekTo(Math.round((offset * -1)/2));
+                        // sound.setVolume(100);
+                        //console.log(Math.round((offset * -1) / 2));
+    
                     }
-                    else myOffset = lag1 * -1;
-
-                    //setTimeout(function(){alert("hi")}, 1000);
-                    //if (diff <= 100 && diff >= -100)
-                    //{
-                    if(diff < 0)
-                        diff = diff *-1;
-                        
-                        //sound.seekTo(diff);
-                        
-                        setTimeout(playMusic(), diff);
-                    //}
-                    //else alert("Your latency is too high.")
-                        
-                    console.log("Playing from " + diff);
-                    
-                    
-                    //sound.seekTo(offset * -1);
-                    //sound.setVolume(0);
-                    //sound.seekTo(Math.round((offset * -1)/2));
-                    // sound.setVolume(100);
-                    //console.log(Math.round((offset * -1) / 2));
-
-
 
                 }
                 // var nname = snapshot.val();
@@ -228,7 +265,7 @@ function playMusic()
     
     </script>
 
-    <div id="ready1"></div>
+
     <br>
     <div id="outputURL"></div>
 
