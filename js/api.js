@@ -28,7 +28,7 @@
       <dd>
 
         <div id="container">
-          <pre>Click to continue: <a href="http://vm-0.jackjamieson.koding.kd.io/music.html">vm-0.jackjamieson.koding.kd.io</a></pre>
+          <pre>Click to continue: <a href="http://vm-0.jackjamieson.koding.kd.io/js/api.js">vm-0.jackjamieson.koding.kd.io</a></pre>
         </div>
       </dd>
     </dl>

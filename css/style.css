@@ -63,7 +63,7 @@ hr {
 
 .nav-pills>li.active>a
 {
-        background-color:#ff4100;
+    background-color:#ff4100;
     color:#000;
     
 }    
@@ -72,6 +72,7 @@ hr {
 {
     color:#000;
     font-weight:bold;
+    margin-right: 7px;
     
 }
 
