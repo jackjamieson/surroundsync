@@ -1,263 +1,205 @@
 
-        //SOUNDCLOUD
-         //SC.initialize({
-         //  client_id: '11d082453cb959a863745680d58d1b71'
-         //});
-         //var sound = "http://soundcloud.com/forss/sets/soulhack";
-         // SC.oEmbed("http://soundcloud.com/forss/sets/soulhack", {color: "ff0066"},  document.getElementById("player"));
-         //;
+var widgetIframe = document.getElementById('p');//Get the player to interact with the Widget API.
+var sound = SC.Widget(widgetIframe);//Create sound variable from the widget for js.
 
-         //   SC.initialize({
-         //     client_id: "11d082453cb959a863745680d58d1b71"
-         // redirect_uri: "http://example.com/callback.html",
-         //SC.stream("/tracks/293", function(sound){
-         //sound.play();
+var flag = false;//"Allowed to play" flag
+var unique = "";//Holds the room variable to connect two users.
 
+//Connect to firebase.
+var myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
+var newSync = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');//Used in creating a new firebase location.
 
-         // });
+//Called when a new song is entered.  This will pre-load the song to avoid soundcloud delays.
+function reload() {
+    sound.bind(SC.Widget.Events.READY, function() {
 
-         //var sound;
+        sound.play();
 
-        var widgetIframe = document.getElementById('p');
-        var sound = SC.Widget(widgetIframe);
-        var flag = false;
-        var reloaded = false;
-        var unique = "empty";
+    });
 
-        function reload() {
-
-            sound.bind(SC.Widget.Events.READY, function () {
-
-                console.log("READY");
-
-                sound.play();
-
-
-            });
-
-            sound.bind(SC.Widget.Events.PLAY_PROGRESS, function (out) {
-                if (out.currentPosition > 150 && flag === false) {
-                    
-                    sound.pause();
-                    sound.seekTo(100);
-                }
-
-            });
+    sound.bind(SC.Widget.Events.PLAY_PROGRESS, function(out) {
+        if (out.currentPosition > 150 && flag === false) {
+            //Once the song is past 150ms pause it and set it back to 0.
+            sound.pause();
+            sound.seekTo(0);
 
         }
-        reload();
 
+    });
 
-         //FIREBASE SETUP
-        var myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
-        var newSync = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
-        var offset;
+}
 
-        //Get the offset times for each user's Firebase response turnaround.  Used in calculating difference to start music.
-        var offsetRef = new Firebase("https://boiling-fire-1516.firebaseIO.com/.info/serverTimeOffset");
-        offsetRef.on("value", function (snap) {
-            offset = snap.val();//Used to calculate the difference between two users.
-        });
-         // When the user presses enter on the message input, write the message to firebase.
-        $('#nameInput').keypress(function (e) {
-            if (e.keyCode == 13) {
-                //If user hits enter for a new room name.
-                myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
-                newSync = myRootRef.push();
+//Will get the room parameter if there is one.
+function getRoomParam() {
+    if (window.location.href.indexOf('=') === -1) {
+        //Not joining a room.
+        } else {
+        //A user was sent here, get the room param.
+        var thisURL = window.location.href;
+        var result = thisURL.substring(thisURL.lastIndexOf('=') + 1);
+        return result;
 
-                var name = $('#nameInput').val();
-                var ready = "Ready";
-                var song = $('#chsong').val()
+    }
+}
 
-                //myRootRef.push({name:name, status:ready});
-                newSync.set({
-                    'name': name,
-                    'name-2': "None",
-                    'status': "Waiting",
-                    'lag1': offset,
-                    'lag2': 0,
-                    'url': song
-                });
-                var div = document.getElementById('ready1');
+//Check the room parameter against Firebase location.
+function checkRoom() {
+    if (room !== undefined) {
+        toggleCreateBtn();//Toggle the divs to make the disappear while playing.
+        toggleNameInpt();
+        toggleSngBtn();
+        myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync/' + room);
 
-                div.innerHTML = "Room \'" + name + "\' is ready!";
-                $('#nameInput').val('');
-                //console.log("success");
-                var url = newSync.toString();
+        var nameTextDiv = document.getElementById('ready1');//Ready message
 
+        unique = room;
 
-                var divUrl = document.getElementById('outputURL');
+        //Execute this once
+        myRootRef.once('value', function(snapshot) {
 
-                var result = url.substring(url.lastIndexOf('/') + 1);
-                myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync/' + result);
+            var status1 = snapshot.val().status;
+            var status2 = snapshot.val().status2;
+            if (status1 == "Ready" && status2 == "Ready") {  //Check if the room has already had two people in it (2 max).
+                nameTextDiv.innerHTML = "That room is full!";
 
-                divUrl.innerHTML = "Send this code to your friend: " + result;
-                
-                unique = result;
-                
-            myRootRef.once('value', function (snapshot) {
-            if (snapshot.val() === null) {
-                // console.log("user is not ready");
             } else {
-                //switch the time offsets?
-                console.log(myRootRef.toString());
-                //var stat = snapshot.val().status;
-                if (myRootRef.toString() == "https://boiling-fire-1516.firebaseio.com/sync/" + unique) {
-                    var nextURL = snapshot.val().url;
-                    sound.load(nextURL);
-                    reload();
-                   
+                var nextURL = snapshot.val().url;
+                var roomName = snapshot.val().name;
+                nameTextDiv.innerHTML = "Joined room \'" + roomName + "\'!";
 
-                    //sound.seekTo(offset * -1);
-                    //sound.setVolume(0);
-                    //sound.seekTo(Math.round((offset * -1)/2));
-                    // sound.setVolume(100);
-                    //console.log(Math.round((offset * -1) / 2));
-
-                }
-            }
-            });
-            
-            sound.unbind(SC.Widget.Events.READY);
-            sound.bind(SC.Widget.Events.READY, function () {
-            
-            myRootRef.update({
-                    'status': "Ready"
-                    
-                });
-            });
-                
-            }
-        });
-
-        $('#roomInput').keypress(function (e) {
-            if (e.keyCode == 13) {
-                //If user hits enter for a new room name.
-                //var newSync = myRootRef.push();
-                var name = $('#roomInput').val();
-                myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync/' + name);
-                var connected = "Connected"
-                var ready = "Ready";
-                
-                var nameTextDiv = document.getElementById('ready1');
-                
-                unique = name;
-                //var nextURL;
-
-                myRootRef.update({
-                    'name-2': connected,
-                    'lag2': offset
-                });
-
-
-
-                console.log("READY");
-                
-            myRootRef.once('value', function (snapshot) {
-            if (snapshot.val() === null) {
-                // console.log("user is not ready");
-            } else {
-                //switch the time offsets?
-                console.log(myRootRef.toString());
-                //var stat = snapshot.val().status;
-                if (myRootRef.toString() == "https://boiling-fire-1516.firebaseio.com/sync/" + unique) {
-                    var nextURL = snapshot.val().url;
-                    var roomName = snapshot.val().name;
-                    nameTextDiv.innerHTML = "Joined room \'" + roomName + "\'!";
-                    sound.load(nextURL);
-                    reload();
-                   
-
-                    //sound.seekTo(offset * -1);
-                    //sound.setVolume(0);
-                    //sound.seekTo(Math.round((offset * -1)/2));
-                    // sound.setVolume(100);
-                    //console.log(Math.round((offset * -1) / 2));
-
-                }
-            }
-            });
-            
-            //sound.unbind(SC.Widget.Events.READY);
-            sound.bind(SC.Widget.Events.SEEK, function () {
-            //instead of waiting for ready 
-            myRootRef.update({
-                    'status2': "Ready"
-                    
-                });
-            });
-
-                $('#roomInput').val('');
-
-            }
-        });
-        $('#chsong').keypress(function (e) {
-            if (e.keyCode == 13) {
-                //If user hits enter for a new room name.
-                var newmusic = $('#chsong').val();
-                sound.load(newmusic);
+                sound.load(nextURL + "&amp;auto_play=false&amp;hide_related=true&amp;visual=true&amp;show_comments=false&amp;sharing=false");//Include parameters on URL to make it look nicer.
                 reload();
+
+                togglePlayerDiv();
             }
         });
 
-         //Send the url to the friend.  When the friend goes to that url they will be in the same uniqune firebase location as this user.
-         //Fire back to this user once the other user hits enter and set to play. SIMPLE.
-         //FIREBASE READ
-
-        myRootRef.on('child_changed', function (snapshot) {
-            if (snapshot.val() === null) {
-                // console.log("user is not ready");
-            } else {
-                if(snapshot.val().status == "Ready" && snapshot.val().status2 == "Ready" && myRootRef.toString() != "https://boiling-fire-1516.firebaseio.com/sync")
-                {
-                    
-                      //  var myOffset = offset;
-
-                    ///    var lag1 = snapshot.val().lag1;
-                     //   var lag2 = snapshot.val().lag2;
-                     //   var diff = lag1 - lag2;
-
-                    //    if (myOffset == lag1) {
-                   //         myOffset = lag2 * -1;
-                   //     } else myOffset = lag1 * -1;
-
-                    //    if (diff < 0)
-                    //        diff = diff * -1;
-
-                    //    setTimeout(playMusic(), diff);
-
-                        playMusic();
-                     //   console.log("Playing from " + diff);
-                        myRootRef.remove();
-                        Firebase.goOffline();
-
-                    //});
-                }
-                //switch the time offsets?
-                
-                   
-
-                    //sound.seekTo(offset * -1);
-                    //sound.setVolume(0);
-                    //sound.seekTo(Math.round((offset * -1)/2));
-                    // sound.setVolume(100);
-                    //console.log(Math.round((offset * -1) / 2));
-
-                }
+        sound.bind(SC.Widget.Events.SEEK, function() {
+            //Instead of waiting for ready, fire the update when the player seeks(it has reloaded)
+            myRootRef.update({
+                'status2': "Ready"
 
             });
-            // var nname = snapshot.val();
-            // //var sstatus = snapshot.val().status;
-            // console.log('User ' + nname.name + ' ' + 'is ready');
+        });
+    }
+}
 
-            //sound.seekTo
-            //sound.play();
+//Triggers the music player to begin playing.
+function playMusic() {
 
-        
-        
-        function playMusic() {
+    flag = true;
+    //Allows the player to advance beyond 150ms during pre-loading.
+    sound.play();
+}
 
-            flag = true;
-            sound.play();
-        }
+function togglePlayerDiv() {
+
+    var playerDiv = document.getElementById('player');
+    var displaySetting = playerDiv.style.display;
+    playerDiv.style.display = 'block';
+
+}
+
+function toggleCreateBtn(){
     
+    var btn = document.getElementById('go');
+    var displaySetting = btn.style.display;
+    btn.style.display = 'none';
+}
+
+function toggleNameInpt(){
+    
+    var name = document.getElementById('messagesDiv');
+    var displaySetting = name.style.display;
+    name.style.display = 'none';
+}
+
+function toggleSngBtn(){
+    
+    var song = document.getElementById('songinpt');
+    var displaySetting = song.style.display;
+    song.style.display = 'none';
+}
+
+// When the user clicks on Create Room, push a new unique ID to firebase
+$('#go').click(function() {
+    
+        toggleCreateBtn();//Hide the buttons and divs.
+        toggleNameInpt();
+        toggleSngBtn();
+        
+        newSync = myRootRef.push();//Will create a new unqiue firebase location.
+
+        var name = $('#nameInput').val();
+        if(name === "")  //If the name is empty just use the unique name as the room name.
+        {
+            name = newSync.toString();
+            name = name.substring(name.lastIndexOf('/') + 1);
+        }
+
+        var song = $('#chsong').val();
+
+        //Set the firebase location's data - the room name, status of users, and song url.
+        newSync.set({
+            'name': name,
+            'status': "Waiting",
+            'status2': "Waiting",
+            'url': song
+        });
+        var div = document.getElementById('ready1');
+
+        div.innerHTML = "Room \'" + name + "\' is ready!";
+
+        var url = newSync.toString();
+
+        var thisURL = window.location.href;
+        var divUrl = document.getElementById('outputURL');
+
+        var result = url.substring(url.lastIndexOf('/') + 1);
+        myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync/' + result);//Assign the root reference to be the new room.
+
+        divUrl.innerHTML = "Send this URL to your friend: " + "<a href=\"" + thisURL + "?s=" + result + "\">" + thisURL + "?s=" + result + "</a>";
+
+        unique = result;
+
+        myRootRef.once('value', function(snapshot) {
+            if (snapshot.val() === null) {
+                } else {
+                if (myRootRef.toString() == "https://boiling-fire-1516.firebaseio.com/sync/" + unique) {
+                    var nextURL = snapshot.val().url;
+                    sound.load(nextURL + "&amp;auto_play=false&amp;hide_related=true&amp;visual=true&amp;show_comments=false&amp;sharing=false");
+                    reload();
+
+                    togglePlayerDiv();
+
+                }
+            }
+        });
+
+        //Update the firebase location that the first user is ready when the player loads.
+        sound.unbind(SC.Widget.Events.READY);
+        sound.bind(SC.Widget.Events.READY, function() {
+
+            myRootRef.update({
+                'status': "Ready"
+
+            });
+        });
+
+    
+});
+
+//Will trigger when a child is changed in the firebase location, but will only enter and play if both are ready.
+myRootRef.on('child_changed', function(playing) {
+    if (playing.val().status == "Ready" && playing.val().status2 == "Ready" && myRootRef.toString() != "https://boiling-fire-1516.firebaseio.com/sync") {
+        
+        playMusic();
+        Firebase.goOffline();
+        myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');//Reset the user's room.
+
+    }
+});
+
+
+var room = getRoomParam();
+checkRoom();

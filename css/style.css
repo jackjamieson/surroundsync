@@ -1,6 +1,6 @@
 body 
 {
-    background-color:#eee6dd;
+    background-color:#F5EDE3;
 }
 
 .player
@@ -9,6 +9,7 @@ body
     margin-left: auto;
     margin-right: auto;
     clear: both;
+    display: none;
 }
 
 .page
@@ -22,24 +23,19 @@ body
 {
     font-weight:bold;
     font-size:24px;
-    float:left;
     
 }
 
-.room
+.song
 {
     font-weight:bold;
     font-size:24px;
-    float:right;   
     
 }
 
-.or
+.songlbl
 {
-    font-size:30px;
-    text-align:center;
-    margin-left: auto;
-    margin-right: auto;
+    margin-right:38px;
 }
 
 .readymsg
@@ -48,8 +44,6 @@ body
     font-weight:bold;
     font-size:30px;
 }
-    
-
 
 hr {
     border: 0;
@@ -61,25 +55,31 @@ hr {
     background-image:      -o-linear-gradient(left, #ccc, #333, #ccc); 
 }
 
-.nav-pills>li.active>a
+.popover-menu
 {
-    background-color:#ff4100;
-    color:#000;
-    
-}    
-
-.nav-pills>li>a
-{
-    color:#000;
-    font-weight:bold;
-    margin-right: 7px;
-    
+    font-size:9pt;
 }
 
-.nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus
+footer
 {
-    
-   background-color:#ff4100;
-   color:#000;
-    
+    text-align:center;
+    font-size:10pt;
+    font-style:italic;
+}
+
+footer a, a:hover
+{
+    color:#f0ad4e;
+}
+
+.btn-primary
+{
+    background-color:#104386;
+}
+
+.URL
+{
+    text-align:center;
+    font-weight:bold;
+    font-size:15px;
 }
