@@ -9,3 +9,7 @@ surroundsync
 ##Possible improvements
 - Switch to Node and Socket.io to avoid client syncing
 - Stream from own source
+
+
+##Demo
+http://jackjamieson.nfshost.com/surround/index.html
