@@ -18,7 +18,7 @@ function reload() {
     });
 
     sound.bind(SC.Widget.Events.PLAY_PROGRESS, function(out) {
-        if (out.currentPosition > 150 && flag === false) {
+        if (out.currentPosition >= 150 && flag === false) {
             //Once the song is past 150ms pause it and set it back to 0.
             sound.pause();
             sound.seekTo(0);
@@ -35,6 +35,7 @@ function getRoomParam() {
         //Not joining a room.
         } else {
         //A user was sent here, get the room param.
+        togglePlayerDiv();
         var thisURL = window.location.href;
         var result = thisURL.substring(thisURL.lastIndexOf('=') + 1);
         return result;
@@ -177,8 +178,8 @@ $('#go').click(function() {
         });
 
         //Update the firebase location that the first user is ready when the player loads.
-        sound.unbind(SC.Widget.Events.READY);
-        sound.bind(SC.Widget.Events.READY, function() {
+        
+        sound.bind(SC.Widget.Events.SEEK, function() {
 
             myRootRef.update({
                 'status': "Ready"
@@ -199,7 +200,6 @@ myRootRef.on('child_changed', function(playing) {
 
     }
 });
-
 
 var room = getRoomParam();
 checkRoom();
