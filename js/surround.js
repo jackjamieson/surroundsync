@@ -10,6 +10,16 @@ var unique = "";//Holds the room variable to connect two users.
 var myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');
 var newSync = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');//Used in creating a new firebase location.
 
+//Will trigger when a child is changed in the firebase location, but will only enter and play if both are ready.
+//Load function early so param-room doesn't miss it.
+myRootRef.on('child_changed', function(playing) {
+    if (playing.val().status == "Ready" && playing.val().status2 == "Ready" && myRootRef.toString() != "https://boiling-fire-1516.firebaseio.com/sync") {
+        
+        playMusic();
+		
+    }
+});
+
 //Called when a new song is entered.  This will pre-load the song to avoid soundcloud delays.
 function reload() {
     sound.bind(SC.Widget.Events.READY, function() {
@@ -72,7 +82,6 @@ function checkRoom() {
                 sound.load(nextURL + "&amp;auto_play=false&amp;hide_related=true&amp;visual=true&amp;show_comments=false&amp;sharing=false");//Include parameters on URL to make it look nicer.
                 reload();
 
-                togglePlayerDiv();
             }
         });
 
@@ -92,6 +101,7 @@ function playMusic() {
     flag = true;
     //Allows the player to advance beyond 150ms during pre-loading.
     sound.play();
+	myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');//Reset the user's room.
 }
 
 function togglePlayerDiv() {
@@ -189,17 +199,6 @@ $('#go').click(function() {
         });
 
     
-});
-
-//Will trigger when a child is changed in the firebase location, but will only enter and play if both are ready.
-myRootRef.on('child_changed', function(playing) {
-    if (playing.val().status == "Ready" && playing.val().status2 == "Ready" && myRootRef.toString() != "https://boiling-fire-1516.firebaseio.com/sync") {
-        
-        playMusic();
-        Firebase.goOffline();
-        myRootRef = new Firebase('https://boiling-fire-1516.firebaseio.com/sync');//Reset the user's room.
-
-    }
 });
 
 checkRoom();
