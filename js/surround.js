@@ -1,3 +1,4 @@
+var room = getRoomParam();
 
 var widgetIframe = document.getElementById('p');//Get the player to interact with the Widget API.
 var sound = SC.Widget(widgetIframe);//Create sound variable from the widget for js.
@@ -18,10 +19,10 @@ function reload() {
     });
 
     sound.bind(SC.Widget.Events.PLAY_PROGRESS, function(out) {
-        if (out.currentPosition >= 150 && flag === false) {
+        if (out.currentPosition >= 300 && flag === false) {
             //Once the song is past 150ms pause it and set it back to 0.
             sound.pause();
-            sound.seekTo(0);
+            sound.seekTo(100);
 
         }
 
@@ -201,5 +202,4 @@ myRootRef.on('child_changed', function(playing) {
     }
 });
 
-var room = getRoomParam();
 checkRoom();
